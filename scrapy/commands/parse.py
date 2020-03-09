@@ -1,4 +1,3 @@
-from __future__ import print_function
 import json
 import logging
 
@@ -60,10 +59,12 @@ class Command(ScrapyCommand):
 
     @property
     def max_level(self):
-        levels = list(self.items.keys()) + list(self.requests.keys())
-        if not levels:
-            return 0
-        return max(levels)
+        max_items, max_requests = 0, 0
+        if self.items:
+            max_items = max(self.items)
+        if self.requests:
+            max_requests = max(self.requests)
+        return max(max_items, max_requests)
 
     def add_items(self, lvl, new_items):
         old_items = self.items.get(lvl, [])
@@ -79,27 +80,26 @@ class Command(ScrapyCommand):
         else:
             items = self.items.get(lvl, [])
 
-        print("# Scraped Items ", "-"*60)
+        print("# Scraped Items ", "-" * 60)
         display.pprint([dict(x) for x in items], colorize=colour)
 
     def print_requests(self, lvl=None, colour=True):
         if lvl is None:
-            levels = list(self.requests.keys())
-            if levels:
-                requests = self.requests[max(levels)]
+            if self.requests:
+                requests = self.requests[max(self.requests)]
             else:
                 requests = []
         else:
             requests = self.requests.get(lvl, [])
 
-        print("# Requests ", "-"*65)
+        print("# Requests ", "-" * 65)
         display.pprint(requests, colorize=colour)
 
     def print_results(self, opts):
         colour = not opts.nocolour
 
         if opts.verbose:
-            for level in range(1, self.max_level+1):
+            for level in range(1, self.max_level + 1):
                 print('\n>>> DEPTH LEVEL: %s <<<' % level)
                 if not opts.noitems:
                     self.print_items(level, colour)
